@@ -1,0 +1,138 @@
+﻿
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+    
+{% if optic %}
+<h1>{{ optic.optic_text }}</h1>
+
+    {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
+<!-- SELECT -->
+<form method="get" action="{% url 'ModelPlotter:calc' optic.optic_text %}" }>
+    <p>
+        Input DOF
+        <select class="parent1" name="in_stage" required>
+            <option value="" selected="selected" class="msg">---Choose stage---</option>
+            {% for stage in optic.type.stages_set.all %}
+            <option value="{{ stage.stage_text }}">{{ stage.stage_text }}</option>
+            {% endfor %}
+        </select>
+
+        <select class="children1" name="in_dof" required disabled>
+            <option value="" selected="selected" class="msg">---Choose DOF---</option>
+            {% for stage in optic.type.stages_set.all %}
+            {% for dof in stage.dofs_set.all %}
+            <option value="{{ dof.dof_text }}" data-val="{{ stage.stage_text }}">{{ dof.dof_text }}</option>
+            {% endfor %}
+            {% endfor %}
+        </select>
+    </p>
+
+    <p>
+        Output DOF
+        <select class="parent2" name="out_stage" required>
+            <option value="" selected="selected" class="msg">---Choose stage---</option>
+            {% for stage in optic.type.stages_set.all %}
+            <option value="{{ stage.stage_text }}">{{ stage.stage_text }}</option>
+            {% endfor %}
+        </select>
+
+        <select class="children2" name="out_dof" required disabled>
+            <option value="" selected="selected" class="msg">---Choose DOF---</option>
+            {% for stage in optic.type.stages_set.all %}
+            {% for dof in stage.dofs_set.all %}
+            <option value="{{ dof.dof_text }}" data-val="{{ stage.stage_text }}">{{ dof.dof_text }}</option>
+            {% endfor %}
+            {% endfor %}
+        </select>
+    </p><br />
+    <p>
+        Plot with measurement data? <br />
+        <input type="radio" name="plotwxml" value="yes" id="yes"><label for="yes">YES</label>
+        <input type="radio" name="plotwxml" value="no" id="no" checked> <label for="no">NO</label><br />
+        Choose the xml file:
+        <input type="file" name="filename" /> <br />
+        Name of Ch A: <input type="text" name="ChA" size="20"> <br />
+        Name of Ch B: <input type="text" name="ChB" size="20">
+    </p><br />
+    <input type="submit" value="Add Plot">
+</form>
+
+
+ <!-- RESULTS -->
+    <h3>RESULTS</h3>
+{% if figure %}
+    <img src="{{ figurename }}" />
+{% endif %}
+{% if zpktxt %}
+    ZPK expression for foton:<br />
+    <textarea name="zpktxt" rows="4" cols="80">{{zpktxt}}</textarea>
+{% endif %}
+
+
+
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type="text/javascript">
+    var $children1 = $('.children1');
+    var original1 = $children1.html();
+
+    $('.parent1').change(function () {
+
+        var val1 = $(this).val();
+
+        $children1.html(original1).find('option').each(function () {
+            var val2 = $(this).data('val');
+
+            if (val1 != val2) {
+                $(this).not('.msg').remove();
+            }
+
+        });
+
+        if ($(this).val() == "") {
+            $children1.attr('disabled', 'disabled');
+        } else {
+            $children1.removeAttr('disabled');
+        }
+
+    });
+</script>
+<script type="text/javascript">
+    var $children2 = $('.children2');
+    var original2 = $children2.html();
+
+    $('.parent2').change(function () {
+
+        var val1 = $(this).val();
+
+        $children2.html(original2).find('option').each(function () {
+            var val2 = $(this).data('val');
+
+            if (val1 != val2) {
+                $(this).not('.msg').remove();
+            }
+
+        });
+
+        if ($(this).val() == "") {
+            $children2.attr('disabled', 'disabled');
+        } else {
+            $children2.removeAttr('disabled');
+        }
+
+    });
+</script>
+
+
+{% else %}
+<p> Optic is not properly loaded. </p>
+{% endif %}
+
+</body>
+</html>

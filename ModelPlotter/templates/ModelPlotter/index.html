@@ -1,0 +1,193 @@
+﻿
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <style type="text/css">
+body,td,th {font-family:"ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, Osaka, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;font-size:17px;}
+</style>
+    <title></title>
+</head>
+<body>
+
+    {% if optic_list %}
+    <h1>VIS Plotter</h1>
+
+    <a href="{% url 'ModelPlotter:manual' %}" target="_blank">how to use</a><br>
+
+    <h4>--- What's new ---</h4>
+    2019/10/7 Temporary ETMX model is available. Only Oplev outputs work in the payload part, not PS outputs.<br />
+    2019/8/17 Script for the zpk expression updated. It will Ommit the same values in zero and poles.<br />
+    2019/8/8  ver0.0 released! Only Type-B and Bp is available. The gain is not properly calculated when you try to see the TF with non-flat DC response. To be fixed.
+
+    <h4>Plot the modeled TF </h4>
+    This will give you the transfer function from the local actuator to the local sensors.<br />
+    Note that, in case of TM stage, the output is the displacement in the inertial system.
+
+    {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
+    <!-- SELECTION AREA -->
+
+    <form method="get" action="{% url 'ModelPlotter:plot_model' %}" }>
+        <!--temporary-->
+        <p>
+            Optic
+            <select id="opt" name="opt" required>
+                <option value="" selected="selected" class="msg">---Choose optic---</option>
+                {% for optic in optic_list %}
+                <option value="{{optic.optic_text}}" data-subgroup="{{optic.optic_text}}">{{ optic.optic_text }}</option>
+                {% endfor %}
+            </select><br />
+
+            Input DOF
+            <select id="in_stage" name="in_stage" required>
+                <option value="" selected="selected" class="msg">---Choose stage---</option>
+                {% for optic in optic_list %}
+                {% for stage in optic.type.stages_set.all %}
+                <option value="{{ stage.stage_text }}" data-group="{{ optic.optic_text }}" data-subgroup="{{optic.optic_text}}{{stage.stage_text}}">{{ stage.stage_text }}</option>
+                {% endfor %}
+                {% endfor %}
+            </select>
+
+            <select id="in_dof" name="in_dof" required>
+                <option value="" selected="selected" class="msg">---Choose DOF---</option>
+                {% for optic in optic_list %}
+                {% for stage in optic.type.stages_set.all %}
+                {% for dof in stage.dofs_set.all %}
+                <option value="{{ dof.dof_text }}" data-group="{{ optic.optic_text }}{{ stage.stage_text }}">{{ dof.dof_text }}</option>
+                {% endfor %}
+                {% endfor %}
+                {% endfor %}
+            </select><br />
+
+            Onput DOF
+            <select id="out_stage" name="out_stage" required>
+                <option value="" selected="selected" class="msg">---Choose stage---</option>
+                {% for optic in optic_list %}
+                {% for stage in optic.type.stages_set.all %}
+                <option value="{{ stage.stage_text }}" data-group="{{ optic.optic_text }}" data-subgroup="{{optic.optic_text}}{{stage.stage_text}}">{{ stage.stage_text }}</option>
+                {% endfor %}
+                {% endfor %}
+            </select>
+
+            <select id="out_dof" name="out_dof" required>
+                <option value="" selected="selected" class="msg">---Choose DOF---</option>
+                {% for optic in optic_list %}
+                {% for stage in optic.type.stages_set.all %}
+                {% for dof in stage.dofs_set.all %}
+                <option value="{{ dof.dof_text }}" data-group="{{ optic.optic_text }}{{ stage.stage_text }}">{{ dof.dof_text }}</option>
+                {% endfor %}
+                {% endfor %}
+                {% endfor %}
+            </select>
+        </p>
+        <input type="submit" value="Add Plot">
+    </form>
+    <br />
+
+    <!-- FILE LOADING AREA -->
+    <p>
+        <h4>Plot the measurement data </h4>
+        Choose the xml file:
+        <form method="POST" action="{% url 'ModelPlotter:plot_data' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% if form.errors %}
+            {% for field in form %}
+            {% for error in field.errors %}
+            <div class="alert alert-danger">
+                <strong>{{ error|escape }}</strong>
+            </div>
+            {% endfor %}
+            {% endfor %}
+            {% for error in form.non_field_errors %}
+            <div class="alert alert-danger">
+                <strong>{{ error|escape }}</strong>
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% for field in form %}
+            <div class="form-group form-inline">
+                <div class="col-md-8">
+                    {{ field }}
+                </div>
+            </div>
+            {% endfor %}
+            ChA: <input type="text" name="ChA" size="25" />
+            ChB: <input type="text" name="ChB" size="25" />
+
+            <div class="form-group">
+                <button type="submit">Add Plot</button>
+            </div>
+        </form>
+    </p>
+    {% if plot_errormsg %}<p><strong>{{ plot_errormsg }}</strong></p>{% endif %}
+
+    {% else %}
+    <p> Optic is not properly loaded. </p>
+    {% endif %}
+    <br />
+    <p>
+        <!-- RESULTS -->
+        {% if figurename %}
+        <h3>RESULTS</h3>
+        {% load static %}
+        <img src="{% static figurename %}" /><br />
+        {% if zpktxt %}
+        ZPK expression for foton:<br />
+        <textarea name="zpktxt" rows="4" cols="80">{{zpktxt}}</textarea><br />
+        <br />
+        {% endif %}
+        <form method="get" action="{% url 'ModelPlotter:plot_clear' %}">
+            <input type="submit" value="Clear Plot" />
+        </form>
+        {% endif %}
+    </p>
+
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script type="text/javascript">
+        setHierarchySelectEvent('#opt', '#in_stage');
+        setHierarchySelectEvent('#in_stage', '#in_dof');
+        setHierarchySelectEvent('#opt', '#out_stage');
+        setHierarchySelectEvent('#out_stage', '#out_dof');
+
+        //セレクトボックスの初期値
+        //$('#opt').val('1').change();
+        //$('#in_stage').val('2').change();
+        //$('#in_dof').val('2').change();
+        //$('#out_stage').val('2').change();
+        //$('#out_dof').val('2').change();
+
+
+        function setHierarchySelectEvent(parentSelect, childSelect) {
+            var initCategorySmallHtml = $(childSelect).html();
+            $(parentSelect).change(function () {
+                if (1 < $(this).find('option:selected').length) {//複数選択時に処理
+                    $(childSelect).find("option").each(function (index, element) {
+                        $(element).remove();
+                    });
+                } else {
+                    var subgroup = $(this).find('option:selected').attr('data-subgroup');
+                    $(childSelect).html(initCategorySmallHtml);
+                    $(childSelect).find("option").each(function (index, element) {
+                        var group = $(element).attr('data-group');
+                        if (group) {
+                            if (subgroup == group) {
+                                //$(element).css('display', 'block');//IEではoptionタグに対してdisplayは効かないため
+                            } else {
+                                //$(element).css('display', 'none');//IEではoptionタグに対してdisplayは効かないため
+                                $(element).remove();
+                            }
+                        }
+                    });
+                }
+                $(childSelect).val('').change();//未選択時の値は''じゃない場合は書き換えてね
+            });
+        }
+    </script>
+
+
+
+
+</body>
+</html>

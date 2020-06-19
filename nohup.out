@@ -1,0 +1,8 @@
+[02/Oct/2019 06:13:18] "GET /ModelPlotter/plot_model/?opt=BS&in_stage=TM&in_dof=L&out_stage=TM&out_dof=L HTTP/1.1" 200 65573
+/usr/local/lib/python3.4/dist-packages/matplotlib/cbook/deprecation.py:107: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
+  warnings.warn(message, mplDeprecation, stacklevel=1)
+[02/Oct/2019 06:13:20] "GET /ModelPlotter/plot_model/?opt=BS&in_stage=TM&in_dof=L&out_stage=TM&out_dof=L HTTP/1.1" 200 65573
+[02/Oct/2019 06:13:42] "GET /ModelPlotter/ HTTP/1.1" 200 64571
+[02/Oct/2019 06:13:45] "GET /ModelPlotter/plot_model/?opt=BS&in_stage=TM&in_dof=L&out_stage=TM&out_dof=L HTTP/1.1" 200 65573
+[02/Oct/2019 06:13:53] "GET /ModelPlotter/plot_model/?opt=BS&in_stage=TM&in_dof=L&out_stage=TM&out_dof=L HTTP/1.1" 200 65573
+[02/Oct/2019 06:13:58] "GET /ModelPlotter/ HTTP/1.1" 200 64571

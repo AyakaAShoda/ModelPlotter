@@ -1,0 +1,24 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Check the latest TFs</title>
+</head>
+<body>
+    <h1>Check the latest transfer functions</h1>
+    This will gives you the latest transfer functions measured using the auto-measurement scripts.<br />
+    <br />
+    Choose the optic:<br />
+    {% if optics_list %}
+    <ul>{% load static %}
+        {% for optic in optics_list %}
+        <li><a href="{% static optic.optic_text %}.html">{{ optic.optic_text }}</a></li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p> No optics plot available. </p>
+    {% endif %}
+
+</body>
+</html>
